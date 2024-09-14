@@ -15,15 +15,17 @@ while cap.isOpened():
         break  # Exit if the video has ended
 
     # Convert frame to HSV color space for better color detection
-   
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    height, width = frame.shape[:2]
+
+    roi = frame[int(height/2):height,0:width]
+    hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
     # Define the color range for the golf ball (tuned for a white ball)
     lower_white = np.array([0, 0, 200])
     upper_white = np.array([180, 50, 255])
 
     # Create a binary mask where the white regions are isolated
-    mask = cv2.inRange(hsv_frame, lower_white, upper_white)
+    mask = cv2.inRange(hsv_roi, lower_white, upper_white)
 
     # Find contours of the ball
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -31,9 +33,10 @@ while cap.isOpened():
     # Draw contours around the detected golf ball
     for contour in contours:
         # Filter out small contours to ignore noise
-        if cv2.contourArea(contour) > 50:  # You may need to adjust this threshold
+        if cv2.contourArea(contour) > 800:  # You may need to adjust this threshold
+
             (x, y), radius = cv2.minEnclosingCircle(contour)
-            center = (int(x), int(y))
+            center = (int(x), int(y + height / 2))
             radius = int(radius)
 
             # Draw the circle and the center
@@ -43,8 +46,12 @@ while cap.isOpened():
             # Print the coordinates of the ball (optional)
             print(f"Ball center: {center}")
 
+    full_mask = np.zeros((height, width), dtype=np.uint8)
+
+    full_mask[int(height/2):height, 0:width] = mask
     # Display the frame with the tracked ball
     cv2.imshow('Golf Ball Tracking', frame)
+    #cv2.imshow('Mask',full_mask)
 
     # Exit if 'q' is pressed
     if cv2.waitKey(30) & 0xFF == ord('q'):

@@ -15,9 +15,7 @@ while cap.isOpened():
         break  # Exit if the video has ended
 
     # Convert frame to HSV color space for better color detection
-    height , width = frame.shape[:2]
-
-    frame = frame[int(height/2),height,0:width]
+   
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Define the color range for the golf ball (tuned for a white ball)
